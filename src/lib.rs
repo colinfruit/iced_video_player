@@ -1,7 +1,7 @@
 use gst::prelude::*;
 use gstreamer as gst;
 use gstreamer_app as gst_app;
-use iced::{image as img, Command, Image, Subscription};
+use iced::{image as img, time, Command, Image, Subscription};
 use num_traits::ToPrimitive;
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
@@ -348,41 +348,5 @@ impl VideoPlayer {
     /// Wrap the output of `frame_image` in an `Image` widget.
     pub fn frame_view(&mut self) -> Image {
         Image::new(self.frame_image())
-    }
-}
-
-// until iced 0.2 is released, which has this built-in
-mod time {
-    use iced::futures;
-
-    pub fn every(duration: std::time::Duration) -> iced::Subscription<std::time::Instant> {
-        iced::Subscription::from_recipe(Every(duration))
-    }
-
-    struct Every(std::time::Duration);
-
-    impl<H, I> iced_native::subscription::Recipe<H, I> for Every
-    where
-        H: std::hash::Hasher,
-    {
-        type Output = std::time::Instant;
-
-        fn hash(&self, state: &mut H) {
-            use std::hash::Hash;
-
-            std::any::TypeId::of::<Self>().hash(state);
-            self.0.hash(state);
-        }
-
-        fn stream(
-            self: Box<Self>,
-            _input: futures::stream::BoxStream<'static, I>,
-        ) -> futures::stream::BoxStream<'static, Self::Output> {
-            use futures::stream::StreamExt;
-
-            tokio::time::interval(self.0)
-                .map(|_| std::time::Instant::now())
-                .boxed()
-        }
     }
 }
